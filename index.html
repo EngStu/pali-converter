@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Pāḷi Script Converter</title>
+  <meta name="theme-color" content="#f0e6d2">
+  <meta name="twitter:image" content="https://tipitakapali.org/web/icons/tipitakapali.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="web/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="web/icons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="web/icons/favicon-16x16.png" />
+  <link rel="manifest" href="web/icons/site.webmanifest" />
+  <link rel="mask-icon" href="web/icons/safari-pinned-tab.svg" color="#5bbad5" />
+  <meta name="msapplication-TileColor" content="#da532c" />
+  <!-- ends icons 05 Feb 2021 -->
+  <style>
+    :root {
+      --safe-area-inset-top: env(safe-area-inset-top, 25px);
+      --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-inset-left: env(safe-area-inset-left, 0px);
+      --safe-area-inset-right: env(safe-area-inset-right, 0px);
+      }
+    
+    /* Global Styles */
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      padding: calc(var(--safe-area-inset-top) + 20px) calc(var(--safe-area-inset-right) + 10px) calc(var(--safe-area-inset-bottom) + 10px) calc(var(--safe-area-inset-left) + 10px);
+
+      background: #f0e6d2;
+      font-family: 'Noto Sans', sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* Links */
+    a {
+      text-decoration: none;
+      color: #4a6da7;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: #2c4a7c;
+    }
+
+    /* Form Styles */
+    .uForm {
+      margin: 0 auto;
+      max-width: 800px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .help {
+      background: #f0e6d2;
+      text-align: center;
+    }
+
+
+    #uType:focus,
+    #convertedArea:focus {
+      outline: none;
+      border-color: #4a6da7;
+    }
+
+    /* Buttons */
+    #clearText,
+    #copyButtonID,
+    #changeM,
+    #aboveM {
+      display: inline-block;
+      padding: 5px 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #clearText {
+      background-color: #f44336;
+      color: white;
+    }
+
+    #clearText:hover {
+      background-color: #d32f2f;
+    }
+
+    #copyButtonID {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    #copyButtonID:hover {
+      background-color: #45a049;
+    }
+
+    #changeM {
+      background-color: gray;
+      color: yellow;
+    }
+
+    #changeM,
+    #aboveM {
+      background-color: rgb(15, 3, 112);
+      color: rgb(78, 236, 4);
+      font-size: 1.5rem;
+    }
+
+    #copyStatus {
+      color: white;
+    }
+
+    /* Select Styles */
+    #uSelectScript,
+    #uType,
+    #convertedArea {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      background-color: #fff;
+    }
+
+    #uType,
+    #convertedArea {
+      font-size: 1.5rem;
+      color: rgb(79, 12, 12);
+      font-weight: bolder;
+      transition: border-color 0.3s ease;
+    }
+
+    /* Loader */
+    .dhammaWheelLoader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .wheelLoader {
+      width: 50px;
+      height: 50px;
+      color: #854f1d;
+      background:
+        conic-gradient(from 90deg at 4px 4px, transparent 90deg, currentColor 0) -4px -4px / calc(50% + 2px) calc(50% + 2px),
+        radial-gradient(farthest-side, currentColor 6px, transparent 7px calc(100% - 6px), currentColor calc(100% - 5px)) no-repeat;
+      border-radius: 50%;
+      animation: spin 2s infinite linear;
+    }
+
+    .wheelLoader::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: inherit;
+      transform: rotate(45deg);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(0.5turn);
+      }
+    }
+
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      #uForm {
+        padding: 10px;
+      }
+
+      #uType,
+      #convertedArea {
+        font-size: 1rem;
+      }
+    }
+
+    .tCenter {
+      margin: 0 auto;
+    }
+
+
+  #gobackFromSearch {
+        position: absolute;
+        top: 0;
+        left: max(calc(var(--safe-area-inset-left) + 30px), 0);
+        /* Prevents the button from overflowing the 80% body width */
+        max-width: 100%;
+        padding-top: calc(var(--safe-area-inset-top) + 30px);
+        z-index: 1000;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="dhammaWheelLoader">
+    <div class="wheelLoader"></div>
+  </div>
+  
+
+  <div id="gobackFromSearch" style="position: absolute;">
+    <button class="smallButton" id="goBackButton" onclick="window.history.back()">
+      <img width="16" height="16" src="web/icons/toplogo.webp" alt="Go back" /> Go back
+    </button>
+  </div>
+  <div class="uForm">
+    <form name="mainForm" id="mainForm" method="POST" action="" enctype="multipart/form-data" style="padding: 5px">
+      <b>Pāḷi Script Converter</b>
+
+      <p id="buildPaliScriptMenu"></p>
+
+      <textarea required rows="2" id="uType" name="uType" placeholder="Accepts 17 mixed scripts input"></textarea>
+
+      <br><span id="clearText">Clear Text</span><br><br>
+
+      <textarea rows="2" id="convertedArea" name="convertedArea" placeholder="output"></textarea>
+
+      <br><span id="copyButtonID">Copy:
+        <span id="copyStatus"></span><span id="copyIcon">📋</span></span>
+      <br>
+       <br>Click to use Roman <span id="changeM">  ṃ  </span> OR <span id="aboveM">  ṁ  </span>
+      <br>
+
+    </form>
+  </div>
+
+  <br>
+  <div class="help">
+     <button class="smallButton" onclick="window.history.back()">
+      <img width="16" height="16" src="web/icons/toplogo.webp" alt="Go back" /> Go back
+    </button> | 
+    <span><a href="https://tipitakapali.org/pali-script-converter.zip" style="text-decoration:none; color: green;">[Download this tool ~ 12 KB]</a></span>
+  </div>
+  <div class="help">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <table class="tCenter">
+      <tr>
+        <th colspan="8">Latin Velthuis scheme (modified):</th>
+      </tr>
+      <tr>
+        <td colspan="8">Type & get, example: aa => ā</td>
+      </tr>
+      <tr>
+        <td class="tCenter">aa</td>
+        <td class="tCenter">ā</td>
+        <td class="tCenter">ii</td>
+        <td class="tCenter">ī</td>
+        <td class="tCenter">uu</td>
+        <td class="tCenter">ū</td>
+        <td class="tCenter">m..</td>
+        <td class="tCenter">ṁ</td>
+      </tr>
+      <tr>
+        <td class="tCenter">.m</td>
+        <td class="tCenter">ṃ</td>
+        <td class="tCenter">.n</td>
+        <td class="tCenter">ṇ</td>
+        <td class="tCenter">.d</td>
+        <td class="tCenter">ḍ</td>
+        <td class="tCenter">.l</td>
+        <td class="tCenter">ḷ</td>
+      </tr>
+      <tr>
+        <td class="tCenter">.r</td>
+        <td class="tCenter">ṛ</td>
+        <td class="tCenter">.s</td>
+        <td class="tCenter">ṣ</td>
+        <td class="tCenter">s..</td>
+        <td class="tCenter">ś</td>
+        <td class="tCenter">.t</td>
+        <td class="tCenter">ṭ</td>
+      </tr>
+      <tr>
+        <td class="tCenter">,,n</td>
+        <td class="tCenter">ñ</td>
+        <td class="tCenter">n..</td>
+        <td class="tCenter">ṅ</td>
+      </tr>
+    </table>
+  </div>
+
+  <p class="center" style="text-align: center;">
+    <br>
+
+    <b>Attributions</b>: <a style="text-decoration: none;" target="_blank"
+      href="https://github.com/Path-Nirvana-Foundation/pali-script-converter">1. pali-script-converter</a>
+    <br><br>
+  </p>
+  </div>
+  <br>
+
+  <script>
+/**
+ * https://tipitakapali.org/pali-script-converter.html
+ * 
+ * Pali Script Convert is adapted from 
+ * https://github.com/Path-Nirvana-Foundation/pali-script-converter
+ * /
+
+
+
+/**
+ * https://github.com/Path-Nirvana-Foundation/pali-script-converter
+ 
+ * Copyright Path Nirvana 2018
+ * The code and character mapping defined in this file can not be used for any commercial purposes.
+ * Permission from the auther is required for all other purposes.
+ */
+ 
+const CVT = (function(){return(()=>{"use strict";var e={384:(e,r,n)=>{var a,t,o,l,c;function u(e,r){for(var n=0;n<r.length;n++){var a=r[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function i(e,r){var n;if("undefined"==typeof Symbol||null==e[Symbol.iterator]){if(Array.isArray(e)||(n=function(e,r){if(e){if("string"==typeof e)return g(e,r);var n=Object.prototype.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?g(e,r):void 0}}(e))||r&&e&&"number"==typeof e.length){n&&(e=n);var a=0;return function(){return a>=e.length?{done:!0}:{done:!1,value:e[a++]}}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}return(n=e[Symbol.iterator]()).next.bind(n)}function g(e,r){(null==r||r>e.length)&&(r=e.length);for(var n=0,a=new Array(r);n<r;n++)a[n]=e[n];return a}n.d(r,{default:()=>k});var p=Object.freeze({SI:"Sinh",HI:"Deva",RO:"Latn",THAI:"Thai",LAOS:"Laoo",MY:"Mymr",KM:"Khmr",BENG:"Beng",GURM:"Guru",THAM:"Lana",GUJA:"Gujr",TELU:"Telu",KANN:"Knda",MALA:"Mlym",BRAH:"Brah",TIBT:"Tibt",CYRL:"Cyrl"}),f=new Map([[p.SI,["Sinhala","සිංහල",[[3456,3583]],{f:"sl_flag.png",locale:"si",localeName:"සිංහල"}]],[p.HI,["Devanagari","नागरी",[[2304,2431]],{f:"in_flag.png",locale:"hi",localeName:"हिन्दी"}]],[p.RO,["Roman","Roman",[[0,383],[7680,7935]],{f:"uk_flag.png",locale:"en",localeName:"English"}]],[p.THAI,["Thai","ไทย",[[3584,3711],63247,63232],{f:"th_flag.png",locale:"th",localeName:"ไทย"}]],[p.LAOS,["Laos","ລາວ",[[3712,3839]],{f:"laos_flag.png",locale:"lo",localeName:"ລາວ"}]],[p.MY,["Myanmar","ဗမာစာ",[[4096,4223]],{f:"my_flag.png",locale:"my",localeName:"ဗမာစာ"}]],[p.KM,["Khmer","ភាសាខ្មែរ",[[6016,6143]],{f:"kh_flag.png",locale:"km",localeName:"ភាសាខ្មែរ"}]],[p.BENG,["Bengali","বাংলা",[[2432,2559]],{f:"bangla_flag.png",locale:"bn",localeName:"বাংলা",g:"indian"}]],[p.GURM,["Gurmukhi","ਗੁਰਮੁਖੀ",[[2560,2687]],{locale:"pa",localeName:"ਪੰਜਾਬੀ",g:"indian"}]],[p.GUJA,["Gujarati","ગુજરાતી",[[2688,2815]],{locale:"gu",localeName:"ગુજરાતી",g:"indian"}]],[p.TELU,["Telugu","తెలుగు",[[3072,3199]],{locale:"te",localeName:"తెలుగు",g:"indian"}]],[p.KANN,["Kannada","ಕನ್ನಡ",[[3200,3327]],{locale:"kn",localeName:"ಕನ್ನಡ",g:"indian"}]],[p.MALA,["Malayalam","മലയാളം",[[3328,3455]],{locale:"ml",localeName:"മലയാളം",g:"indian"}]],[p.THAM,["Tai Tham","Tai Tham LN",[[6688,6831]],{locale:"th",localeName:"ไทย (Lanna)",c:"beta-script",g:"other"}]],[p.BRAH,["Brahmi","Brāhmī",[[55300,55300],[56320,56447]],{locale:"hi",localeName:"हिन्दी (Brah)",g:"other"}]],[p.TIBT,["Tibetan","བོད་སྐད།",[[3840,4095]],{f:"tibet_flag.png",c:"larger",locale:"bo",localeName:"བོད་སྐད།",g:"other"}]],[p.CYRL,["Cyrillic","кириллица",[[1024,1279],[768,879]],{f:"russia_flag.png",locale:"ru",localeName:"ру́сский",g:"other"}]]]);function h(e){for(var r,n=i(f);!(r=n()).done;)for(var a,t=r.value,o=i(t[1][2]);!(a=o()).done;){var l=a.value;if(Array.isArray(l)&&e>=l[0]&&e<=l[1])return t[0];if(Number.isInteger(l)&&e===l)return t[0]}return-1}var v=((a={})[p.SI]=0,a[p.HI]=1,a[p.RO]=2,a[p.THAI]=3,a[p.LAOS]=4,a[p.MY]=5,a[p.KM]=6,a[p.BENG]=7,a[p.GURM]=8,a[p.THAM]=9,a[p.GUJA]=10,a[p.TELU]=11,a[p.KANN]=12,a[p.MALA]=13,a[p.BRAH]=14,a[p.TIBT]=15,a[p.CYRL]=16,a),s=[["අ","अ","a","อ","ອ","အ","អ","অ","ਅ","ᩋ","અ","అ","ಅ","അ","𑀅","ཨ","а"],["ආ","आ","ā","อา","ອາ","အာ","អា","আ","ਆ","ᩌ","આ","ఆ","ಆ","ആ","𑀆","ཨཱ","а̄"],["ඉ","इ","i","อิ","ອິ","ဣ","ឥ","ই","ਇ","ᩍ","ઇ","ఇ","ಇ","ഇ","𑀇","ཨི","и"],["ඊ","ई","ī","อี","ອີ","ဤ","ឦ","ঈ","ਈ","ᩎ","ઈ","ఈ","ಈ","ഈ","𑀈","ཨཱི","ӣ"],["උ","उ","u","อุ","ອຸ","ဥ","ឧ","উ","ਉ","ᩏ","ઉ","ఉ","ಉ","ഉ","𑀉","ཨུ","у"],["ඌ","ऊ","ū","อู","ອູ","ဦ","ឩ","ঊ","ਊ","ᩐ","ઊ","ఊ","ಊ","ഊ","𑀊","ཨཱུ","ӯ"],["එ","ए","e","อเ","ອເ","ဧ","ឯ","এ","ਏ","ᩑ","એ","ఏ","ಏ","ഏ","𑀏","ཨེ","е"],["ඔ","ओ","o","อโ","ອໂ","ဩ","ឱ","ও","ਓ","ᩒ","ઓ","ఓ","ಓ","ഓ","𑀑","ཨོ","о"],["ං","ं","ṃ","ํ","ໍ","ံ","ំ","ং","ਂ","ᩴ","ં","ం","ಂ","ം","𑀁","ཾ","м̣"],["ඃ","ः","ḥ","ะ","ະ","း","ះ","ঃ","ਃ","ᩡ","ઃ","ః","ಃ","ഃ","𑀂","ཿ","х̣"],["්","्","","ฺ","຺","္","្","্","੍","᩠","્","్","್","്","𑁆","྄",""],["0","०","0","๐","໐","၀","០","০","੦","᪐","૦","౦","೦","൦","𑁦","༠","0"],["1","१","1","๑","໑","၁","១","১","੧","᪑","૧","౧","೧","൧","𑁧","༡","1"],["2","२","2","๒","໒","၂","២","২","੨","᪒","૨","౨","೨","൨","𑁨","༢","2"],["3","३","3","๓","໓","၃","៣","৩","੩","᪓","૩","౩","೩","൩","𑁩","༣","3"],["4","४","4","๔","໔","၄","៤","৪","੪","᪔","૪","౪","೪","൪","𑁪","༤","4"],["5","५","5","๕","໕","၅","៥","৫","੫","᪕","૫","౫","೫","൫","𑁫","༥","5"],["6","६","6","๖","໖","၆","៦","৬","੬","᪖","૬","౬","೬","൬","𑁬","༦","6"],["7","७","7","๗","໗","၇","៧","৭","੭","᪗","૭","౭","೭","൭","𑁭","༧","7"],["8","८","8","๘","໘","၈","៨","৮","੮","᪘","૮","౮","೮","൮","𑁮","༨","8"],["9","९","9","๙","໙","၉","៩","৯","੯","᪙","૯","౯","೯","൯","𑁯","༩","9"]],m=[["ක","क","k","ก","ກ","က","ក","ক","ਕ","ᨠ","ક","క","ಕ","ക","𑀓","ཀ","к"],["ඛ","ख","kh","ข","ຂ","ခ","ខ","খ","ਖ","ᨡ","ખ","ఖ","ಖ","ഖ","𑀔","ཁ","кх"],["ග","ग","g","ค","ຄ","ဂ","គ","গ","ਗ","ᨣ","ગ","గ","ಗ","ഗ","𑀕","ག","г"],["ඝ","घ","gh","ฆ","ຆ","ဃ","ឃ","ঘ","ਘ","ᨥ","ઘ","ఘ","ಘ","ഘ","𑀖","གྷ","гх"],["ඞ","ङ","ṅ","ง","ງ","င","ង","ঙ","ਙ","ᨦ","ઙ","ఙ","ಙ","ങ","𑀗","ང","н̇"],["ච","च","c","จ","ຈ","စ","ច","চ","ਚ","ᨧ","ચ","చ","ಚ","ച","𑀘","ཙ","ч"],["ඡ","छ","ch","ฉ","ຉ","ဆ","ឆ","ছ","ਛ","ᨨ","છ","ఛ","ಛ","ഛ","𑀙","ཚ","чх"],["ජ","ज","j","ช","ຊ","ဇ","ជ","জ","ਜ","ᨩ","જ","జ","ಜ","ജ","𑀚","ཛ","дж"],["ඣ","झ","jh","ฌ","ຌ","ဈ","ឈ","ঝ","ਝ","ᨫ","ઝ","ఝ","ಝ","ഝ","𑀛","ཛྷ","джх"],["ඤ","ञ","ñ","ญ","ຎ","ဉ","ញ","ঞ","ਞ","ᨬ","ઞ","ఞ","ಞ","ഞ","𑀜","ཉ","н̃"],["ට","ट","ṭ","ฏ","ຏ","ဋ","ដ","ট","ਟ","ᨭ","ટ","ట","ಟ","ട","𑀝","ཊ","т̣"],["ඨ","ठ","ṭh","ฐ","ຐ","ဌ","ឋ","ঠ","ਠ","ᨮ","ઠ","ఠ","ಠ","ഠ","𑀞","ཋ","т̣х"],["ඩ","ड","ḍ","ฑ","ຑ","ဍ","ឌ","ড","ਡ","ᨯ","ડ","డ","ಡ","ഡ","𑀟","ཌ","д̣"],["ඪ","ढ","ḍh","ฒ","ຒ","ဎ","ឍ","ঢ","ਢ","ᨰ","ઢ","ఢ","ಢ","ഢ","𑀠","ཌྷ","д̣х"],["ණ","ण","ṇ","ณ","ຓ","ဏ","ណ","ণ","ਣ","ᨱ","ણ","ణ","ಣ","ണ","𑀡","ཎ","н̣"],["ත","त","t","ต","ຕ","တ","ត","ত","ਤ","ᨲ","ત","త","ತ","ത","𑀢","ཏ","т"],["ථ","थ","th","ถ","ຖ","ထ","ថ","থ","ਥ","ᨳ","થ","థ","ಥ","ഥ","𑀣","ཐ","тх"],["ද","द","d","ท","ທ","ဒ","ទ","দ","ਦ","ᨴ","દ","ద","ದ","ദ","𑀤","ད","д"],["ධ","ध","dh","ธ","ຘ","ဓ","ធ","ধ","ਧ","ᨵ","ધ","ధ","ಧ","ധ","𑀥","དྷ","дх"],["න","न","n","น","ນ","န","ន","ন","ਨ","ᨶ","ન","న","ನ","ന","𑀦","ན","н"],["ප","प","p","ป","ປ","ပ","ប","প","ਪ","ᨸ","પ","ప","ಪ","പ","𑀧","པ","п"],["ඵ","फ","ph","ผ","ຜ","ဖ","ផ","ফ","ਫ","ᨹ","ફ","ఫ","ಫ","ഫ","𑀨","ཕ","пх"],["බ","ब","b","พ","ພ","ဗ","ព","ব","ਬ","ᨻ","બ","బ","ಬ","ബ","𑀩","བ","б"],["භ","भ","bh","ภ","ຠ","ဘ","ភ","ভ","ਭ","ᨽ","ભ","భ","ಭ","ഭ","𑀪","བྷ","бх"],["ම","म","m","ม","ມ","မ","ម","ম","ਮ","ᨾ","મ","మ","ಮ","മ","𑀫","མ","м"],["ය","य","y","ย","ຍ","ယ","យ","য","ਯ","ᨿ","ય","య","ಯ","യ","𑀬","ཡ","й"],["ර","र","r","ร","ຣ","ရ","រ","র","ਰ","ᩁ","ર","ర","ರ","ര","𑀭","ར","р"],["ල","ल","l","ล","ລ","လ","ល","ল","ਲ","ᩃ","લ","ల","ಲ","ല","𑀮","ལ","л"],["ළ","ळ","ḷ","ฬ","ຬ","ဠ","ឡ","ল়","ਲ਼","ᩊ","ળ","ళ","ಳ","ള","𑀴","ལ༹","л̣"],["ව","व","v","ว","ວ","ဝ","វ","ৰ","ਵ","ᩅ","વ","వ","ವ","വ","𑀯","ཝ","в"],["ස","स","s","ส","ສ","သ","ស","স","ਸ","ᩈ","સ","స","ಸ","സ","𑀲","ས","с"],["හ","ह","h","ห","ຫ","ဟ","ហ","হ","ਹ","ᩉ","હ","హ","ಹ","ഹ","𑀳","ཧ","х"]],A=[["ා","ा","ā","า","າ","ာ","ា","া","ਾ","ᩣ","ા","ా","ಾ","ാ","𑀸","ཱ","а̄"],["ි","ि","i","ิ","ິ","ိ","ិ","ি","ਿ","ᩥ","િ","ి","ಿ","ി","𑀺","ི","и"],["ී","ी","ī","ี","ີ","ီ","ី","ী","ੀ","ᩦ","ી","ీ","ೀ","ീ","𑀻","ཱི","ӣ"],["ු","ु","u","ุ","ຸ","ု","ុ","ু","ੁ","ᩩ","ુ","ు","ು","ു","𑀼","ུ","у"],["ූ","ू","ū","ู","ູ","ူ","ូ","ূ","ੂ","ᩪ","ૂ","ూ","ೂ","ൂ","𑀽","ཱུ","ӯ"],["ෙ","े","e","เ","ເ","ေ","េ","ে","ੇ","ᩮ","ે","ే","ೇ","േ","𑁂","ེ","е"],["ො","ो","o","โ","ໂ","ော","ោ","ো","ੋ","ᩮᩣ","ો","ో","ೋ","ോ","𑁄","ོ","о"]];function d(e,r,n){void 0===n&&(n="");var a=e;return"cen"===n?a=a.replace(/॥/g,""):n.startsWith("ga")&&(a=(a=a.replace(/।/g,";")).replace(/॥/g,".")),(a=(a=(a=a.replace(/॰…/g,"…")).replace(/॰/g,"·")).replace(/[।॥]/g,".")).replace(/\s([\s,!;\?\.])/g,"$1")}function y(e,r,n){if(void 0===n&&(n=""),r===p.THAI)return e.replace(/([ก-ฮ])([เโ])/g,"$2$1");if(r===p.LAOS)return e.replace(/([ກ-ຮ])([ເໂ])/g,"$2$1");throw new Error("Unsupported script "+r+" for swap_e_o method.")}function S(e,r){if(r===p.THAI)return e.replace(/([เโ])([ก-ฮ])/g,"$2$1");if(r===p.LAOS)return e.replace(/([ເໂ])([ກ-ຮ])/g,"$2$1");throw new Error("Unsupported script "+r+" for un_swap_e_o method.")}function T(e){return e.replace(/\u200C|\u200D/g,"")}var b=[],I=((t={})[p.SI]=[function(e,r,n){return void 0===n&&(n=""),e.replace(/\u0DCA([\u0DBA\u0DBB])/g,"\u0DCA\u200D$1")},d],t[p.RO]=[d],t[p.THAI]=[y,function(e,r){return e.replace(/\u0E34\u0E4D/g,"ึ").replace(/ญ/g,"").replace(/ฐ/g,"")},d],t[p.LAOS]=[y,d],t[p.MY]=[function(e,r,n){void 0===n&&(n="");return e.replace(/[,;]/g,"၊").replace(/[\u0964\u0965]+/g,"။")/*pnry modified*/.replace(/\./g, '။').replace(/ဉ\u1039ဉ/g,"ည").replace(/သ\u1039သ/g,"ဿ").replace(/င္([က-ဠ])/g,"င်္$1").replace(/္ယ/g,"ျ").replace(/္ရ/g,"ြ").replace(/္ဝ/g,"ွ").replace(/္ဟ/g,"ှ").replace(/([ခဂငဒပဝ]ေ?)\u102c/g,"$1ါ").replace(/(က္ခ|န္ဒ|ပ္ပ|မ္ပ)(ေ?)\u102b/g,"$1$2ာ").replace(/(ဒ္ဓ|ဒွ)(ေ?)\u102c/g,"$1ါ")},d],t[p.KM]=[d],t[p.THAM]=[function(e){return e.replace(/\u1A60\u1A41/g,"ᩕ").replace(/\u1A48\u1A60\u1A48/g,"ᩔ").replace(/।/g,"᪨").replace(/॥/g,"᪩")}],t[p.GUJA]=[d],t[p.TELU]=[d],t[p.MALA]=[d],t[p.BRAH]=[function(e){return e.replace(/।/g,"𑁇").replace(/॥/g,"𑁈").replace(/–/g,"𑁋")},d],t[p.TIBT]=[function(e){var r=e;r=(r=r.replace(/।/g,"།")).replace(/॥/g,"༎");for(var n=0;n<=39;n+=1)r=r.replace(new RegExp(String.fromCharCode(3972,3904+n),"g"),String.fromCharCode(3984+n));return(r=(r=(r=(r=r.replace(/\u0F61\u0FB1/g,"ཡྻ")).replace(/\u0F5D\u0FAD/g,"ཝྺ")).replace(/\u0F5B\u0FAC/g,"ཛ྄ཛྷ")).replace(/\u0F61\u0FB7/g,"ཡ྄ཧ")).replace(/\u0F5D\u0FB7/g,"ཝ྄ཧ")}],t[p.CYRL]=[d],t),L=[],N=((o={})[p.SI]=[T,function(e){return e.replace(/ඒ/g,"එ").replace(/ඕ/g,"ඔ").replace(/ේ/g,"ෙ").replace(/ෝ/g,"ො")}],o[p.HI]=[T],o[p.RO]=[function(e){return e.toLowerCase()}],o[p.THAI]=[function(e,r){return e.replace(/ฎ/g,"ฏ").replace(/\u0E36/g,"ิํ").replace(/\uF70F/g,"ญ").replace(/\uF700/g,"ฐ")},S],o[p.LAOS]=[S],o[p.KM]=[function(e,r){return e.replace(/\u17B9/g,"ិំ").replace(/\u17D1/g,"្")}],o[p.MY]=[function(e){return e.replace(/\u102B/g,"ာ").replace(/ှ/g,"္ဟ").replace(/ွ/g,"္ဝ").replace(/ြ/g,"္ရ").replace(/ျ/g,"္ယ").replace(/\u103A/g,"").replace(/ဿ/g,"သ္သ").replace(/ည/g,"ဉ္ဉ").replace(/သံဃ/g,"သင္ဃ").replace(/၊/g,",").replace(/။/g,".")}],o[p.TIBT]=[function(e){return e}],o);function M(e,r,n){void 0===n&&(n=!0);var a=m.concat(s,n?A:[]),t=[[],[],[]];return a.forEach((function(n){n[e]&&t[n[e].length-1].push([n[e],n[r]])})),t.filter((function(e){return e.length})).map((function(e){return[e[0][0].length,new Map(e)]})).reverse()}function $(e,r){for(var n=[],a=0;a<e.length;){for(var t,o=!1,l=i(r);!(t=l()).done;){var c=t.value,u=c[0],g=c[1],p=e.substr(a,u);if(g.has(p)){n.push(g.get(p)),o=!0,a+=u;break}}o||(n.push(e.charAt(a)),a+=1)}return n.join("")}function B(e,r){var n=r===p.CYRL?"а":"a";return e.replace(new RegExp("([ක-ෆ])([^ා-ෟ්"+n+"])","g"),"$1"+n+"$2").replace(new RegExp("([ක-ෆ])([^ා-ෟ්"+n+"])","g"),"$1"+n+"$2").replace(/([ක-ෆ])$/g,"$1"+n)}var C={අ:"",ආ:"ා",ඉ:"ි",ඊ:"ී",උ:"ු",ඌ:"ූ",එ:"ෙ",ඔ:"ො"};function R(e,r){var n=e;return(n=(n=(n=n.replace(/([ක-ෆ])([^අආඉඊඋඌඑඔ\u0DCA])/g,"$1්$2")).replace(/([ක-ෆ])([^අආඉඊඋඌඑඔ\u0DCA])/g,"$1්$2")).replace(/([ක-ෆ])$/g,"$1්")).replace(/([ක-ෆ])([අආඉඊඋඌඑඔ])/g,(function(e,r,n){return r+C[n]}))}function E(e,r){return $(e,M(v[p.SI],v[r]))}function O(e,r){return $(e,M(v[r],v[p.SI],!1))}var w=[E],F=((l={})[p.SI]=[],l[p.RO]=[B,E],l[p.CYRL]=[B,E],l),H=[function(e,r){return $(e,M(v[r],v[p.SI]))}],x=((c={})[p.SI]=[],c[p.RO]=[O,function(e){return e.replace(/ṁ/g,"ං")},R],c[p.CYRL]=[O,R],c),j=function(){function e(){!function(e,r){if(!(e instanceof r))throw new TypeError("Cannot call a class as a function")}(this,e)}var r,n;return r=e,n=[{key:"basicConvertFromSinh",value:function(e,r){var n=e;return(F[r]||w).forEach((function(e){n=e(n,r)})),n}},{key:"basicConvertToSinh",value:function(e,r){var n=e;return(x[r]||H).forEach((function(e){n=e(n,r)})),n}},{key:"beautify",value:function(e,r,n){void 0===n&&(n="");var a=e;return(I[r]||b).forEach((function(e){a=e(a,r,n)})),a}},{key:"convertFromSinh",value:function(e,r){var n=e;return n=this.basicConvertFromSinh(n,r),this.beautify(n,r)}},{key:"convertToSinh",value:function(e,r){var n=e;return(N[r]||L).forEach((function(e){n=e(n,r)})),this.basicConvertToSinh(n,r)}},{key:"convertAnyToSinh",value:function(e){var r=e;r=T(r)+" ";for(var n=-1,a="",t="",o=0;o<r.length;o+=1){var l=h(r.charCodeAt(o));l!==n||o===r.length-1?(t+=this.convertToSinh(a,n),n=l,a=r.charAt(o)):a+=r.charAt(o)}return t}}],null&&u(r.prototype,null),n&&u(r,n),e}();const k={Script:p,TextProcessor:j,getScriptForCode:h,PaliScriptInfo:f,ScriptIndex:v,convert:function(e,r,n){var a=j.convertToSinh(e,r);return j.convertFromSinh(a,n)},convertAny:function(e,r){var n=j.convertAnyToSinh(e);return j.convertFromSinh(n,r)},getLocaleForScript:function(e){var r;return null==(r=f.get(e))?void 0:r[3].locale},getLocaleNameForScript:function(e){var r;return null==(r=f.get(e))?void 0:r[3].localeName},getSupportedLocales:function(){var e=Object.getOwnPropertyNames(p).map((function(e){var r;return null==(r=f.get(p[e]))?void 0:r[3]}));return new Set(e.map((function(e){return e.locale})))}}}},r={};function n(a){if(r[a])return r[a].exports;var t=r[a]={exports:{}};return e[a](t,t.exports,n),t.exports}return n.d=(e,r)=>{for(var a in r)n.o(r,a)&&!n.o(e,a)&&Object.defineProperty(e,a,{enumerable:!0,get:r[a]})},n.o=(e,r)=>Object.prototype.hasOwnProperty.call(e,r),n(384)})().default})();
+
+
+
+const SKEY = "PSC13Mar22"
+let usedPaliScript = localStorage.getItem(SKEY)
+let currentPaliScript = usedPaliScript ? usedPaliScript : "my"
+
+window.onload = runOnStartUpLoaded
+
+function convertMixScript(mixText, toScript) {
+  const sinh = CVT.TextProcessor.convertAnyToSinh(mixText)
+  return CVT.TextProcessor.convertFromSinh(sinh, CVT.Script[toScript.toLocaleUpperCase()])
+}
+
+function runOnStartUpLoaded() {
+  buildPaliScriptMenu()
+  loadSavedPaliScript("uSelectScript")
+
+  document.getElementById("uType").addEventListener("input", uTyping, { passive: false })
+  document.getElementById("clearText").addEventListener("click", clearTextArea, { passive: false })
+  document.getElementById("copyButtonID").addEventListener("click", copyButton, { passive: false })
+  document.getElementById("changeM").addEventListener("click", changeM, { passive: false })
+  document.getElementById("aboveM").addEventListener("click", aboveM, { passive: false })
+  document.getElementById("uType").focus()
+}
+
+const scriptFonts = {
+  si: ["UN-Abhaya", "", ""],
+  my: ["Pyidaungsu", "", ""],
+  hi: ["Noto Sans Devanagari", "", ""],
+  ro: ["Noto Sans", "", ""],
+  thai: ["TH Sarabun New", "2rem", ""],
+  laos: ["Noto Sans Lao", "", ""],
+  km: ["Noto Sans Khmer", "", ""],
+  beng: ["Noto Sans Bengali", "", ""],
+  gurm: ["Noto Sans Gurmukhi", "", ""],
+  guja: ["Noto Sans Gujarati", "", ""],
+  telu: ["Noto Sans Telugu", "", ""],
+  kann: ["Noto Sans Kannada", "", ""],
+  mala: ["Noto Sans Malayalam", "", ""],
+  tham: ["Noto Sans Tai Tham", "", ""],
+  // does not have a bold variant font
+  brah: ["Noto Sans Brahmi", "", ""],
+  tibt: ["Noto Serif Tibetan", "", ""],
+  cyrl: ["Noto Sans", "", ""],
+}
+
+function loadFonts(paliScript) {
+  const P = scriptFonts[paliScript]
+  const fontFamily = P[0]
+  const style = document.createElement("style")
+
+  let textContent = `
+    @font-face {
+    font-family: "${fontFamily}";
+    src: local("${fontFamily}"),
+    url("web/fonts/pali/${fontFamily.replace(/\s+/g, "_")}/static/${fontFamily.replace(/\s+/g, "")}-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-display: swap;
+    }
+    @font-face {
+    font-family: ${fontFamily};
+    src: local("${fontFamily}"),
+    url("web/fonts/pali/${fontFamily.replace(/\s+/g, "_")}/static/${fontFamily.replace(/\s+/g, "")}-Bold.ttf") format("truetype");
+    font-weight: bold;
+    font-display: swap;
+    }
+    `
+
+  if ("Brah" == paliScript) {
+    //// brah has no bold font
+    console.log("I can not find bold font for the brah script")
+
+    textContent = `
+      @font-face {
+      font-family: "${fontFamily}";
+      src: local("${fontFamily}"),
+      url("web/fonts/pali/${fontFamily.replace(/\s+/g, "_")}/static/${fontFamily.replace(/\s+/g, "")}-Regular.ttf") format("truetype");
+      font-weight: normal;
+      font-display: swap;
+      }
+      `
+  }
+  let bodyCss = ` body { font-family: "${fontFamily}" ;}`
+
+  style.textContent = textContent + bodyCss
+  document.head.appendChild(style)
+}
+
+function buildPaliScriptMenu() {
+  let html = `
+<label for="uSelectScript">Convert To Pāḷi Script</label>
+<select id="uSelectScript" name="uSelectScript" style="font-family: 'Noto Sans', sans-serif;">
+<option disabled value="" style="font-family: 'Noto Sans', sans-serif;">--Please choose an option--</option>`
+
+  Object.entries(CVT.Script).forEach(([key, value]) => {
+    const s = CVT.PaliScriptInfo.get(value)
+    const scriptCode = key.toLocaleLowerCase()
+    html += `<option value="${scriptCode}" ${scriptCode == currentPaliScript ? "selected" : ""} >${s[0]} - ${s[1]}</option>`
+  })
+
+  html += "</select>"
+  document.getElementById("buildPaliScriptMenu").innerHTML = html
+  listen_UserSelectScript("uSelectScript")
+  loadFonts(currentPaliScript)
+}
+
+function listen_UserSelectScript(id) {
+  document.getElementById(id).addEventListener("change", saveUserScript, { passive: false })
+}
+
+function saveUserScript() {
+  let select = document.getElementById("uSelectScript")
+  let svalue = select.options[select.selectedIndex].value
+  svalue = svalue ? svalue : "ro"
+  currentPaliScript = svalue
+
+  localStorage.setItem(SKEY, svalue)
+  loadFonts(svalue)
+  // update converted script
+  uTyping()
+}
+
+function loadSavedPaliScript(id) {
+  try {
+    let ele = document.getElementById(id)
+    ele.value = currentPaliScript
+  } catch (e) {
+    console.log(`${e} \n\nError when loading last used pali script.
+Is this id ${id} changed in the UI?
+It is now removing the mising key and reloading.`)
+    localStorage.remove(SKEY)
+    window.location.reload(true)
+  }
+}
+
+function uTyping() {
+  let t = document.getElementById("uType")
+  let res = document.getElementById("convertedArea")
+  let vel = typeVelthuis(t.value)
+  t.value = vel
+  // res.value = convertMixScript(vel, currentPaliScript)
+  toChangeM = convertMixScript(vel, currentPaliScript)
+  res.value = toChangeM.replace(/ṃ/g, "ṁ")  // ensure using the correct 'ṃ' character
+}
+
+function changeM() {
+  let t = document.getElementById("uType")
+  let res = document.getElementById("convertedArea")
+  let vel = typeVelthuis(t.value)
+  t.value = vel
+  res.value = convertMixScript(vel, currentPaliScript)  
+}
+
+function aboveM() {
+  let t = document.getElementById("uType")
+  let res = document.getElementById("convertedArea")
+  let vel = typeVelthuis(t.value)
+  t.value = vel
+  toChangeM = convertMixScript(vel, currentPaliScript)
+  res.value = toChangeM.replace(/ṃ/g, "ṁ") 
+}
+
+function clearTextArea() {
+  document.getElementById("uType").value = ""
+  document.getElementById("convertedArea").value = ""
+  document.getElementById("uType").focus()
+}
+
+function copyButton() {
+  let el = document.getElementById("convertedArea")
+  let tex = el.value
+  el.focus()
+  el.setSelectionRange(0, tex.length)
+
+  // Get status element and icon element
+  let statusEl = document.getElementById("copyStatus")
+  let iconEl = document.getElementById("copyIcon")
+
+  // Use the contextBridge to access Electron functionality
+  if (window.electronAPI && window.electronAPI.copyToClipboard) {
+    window.electronAPI.copyToClipboard(tex, (error) => {
+      if (error) {
+        updateCopyStatus("Failed to copy: " + error, "error")
+      } else {
+        updateCopyStatus("Copied to clipboard!", "success")
+      }
+    })
+  } else {
+    // Fallback to execCommand for browsers that support it
+    try {
+      var successful = document.execCommand("copy")
+      if (successful) {
+        updateCopyStatus("Copied to clipboard!", "success")
+      } else {
+        throw new Error("execCommand('copy') was unsuccessful")
+      }
+    } catch (err) {
+      updateCopyStatus("Failed to copy: " + err, "error")
+    }
+  }
+
+  // Reset status after 3 seconds
+  setTimeout(() => {
+    updateCopyStatus("", "")
+  }, 3000)
+}
+
+function updateCopyStatus(message, status) {
+  let statusEl = document.getElementById("copyStatus")
+  let iconEl = document.getElementById("copyIcon")
+
+  statusEl.textContent = message
+
+  if (status === "success") {
+    statusEl.style.color = "white"
+    iconEl.textContent = "✅" // Checkmark emoji
+  } else if (status === "error") {
+    statusEl.style.color = "red"
+    iconEl.textContent = "❌" // Cross mark emoji
+  } else {
+    statusEl.style.color = ""
+    iconEl.textContent = "📋" // Clipboard emoji
+  }
+}
+
+function typeVelthuis(uType) {
+  /* 2017, updated 20 Dec 2020 */
+  return uType
+    .replace(/aa/g, "ā")
+    .replace(/ii/g, "ī")
+    .replace(/uu/g, "ū")
+    .replace(/m\.\./g, "ṁ")
+    .replace(/\.m/g, "ṃ")
+    .replace(/\.n/g, "ṇ")
+    .replace(/\.d/g, "ḍ")
+    .replace(/\.l/g, "ḷ")
+    .replace(/\.r/g, "ṛ")
+    .replace(/\.s/g, "ṣ")
+    .replace(/s\.\./g, "ś")
+    .replace(/\.t/g, "ṭ")
+    .replace(/,,n/g, "ñ")
+    .replace(/n\.\./g, "ṅ")
+    .replace(/AA/g, "Ā")
+    .replace(/II/g, "Ī")
+    .replace(/UU/g, "Ū")
+    .replace(/M\.\./g, "Ṁ")
+    .replace(/\.M/g, "Ṃ")
+    .replace(/\.N/g, "Ṇ")
+    .replace(/\.D/g, "Ḍ")
+    .replace(/\.L/g, "Ḷ")
+    .replace(/\.R/g, "Ṛ")
+    .replace(/\.S/g, "Ṣ")
+    .replace(/S\.\./g, "Ś")
+    .replace(/\.T/g, "Ṭ")
+    .replace(/,,N/g, "Ñ")
+    .replace(/N\.\./g, "Ṅ")
+}
+
+function linkGoback() {
+  let e = localStorage.getItem("tipitakapali_org_CURRENT_BOOK_KEY") || "https://tipitakapali.org"
+  window.location.assign(e)
+}
+
+  </script>
+
+</body>
+
+</html>
